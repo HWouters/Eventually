@@ -15,7 +15,7 @@ namespace Eventually
         private IDisposable subscription;
         private object gate = new object();
 
-        public EventAwaiter(IEvent<TSender, TEventArgs> eventSource)
+        internal EventAwaiter(IEvent<TSender, TEventArgs> eventSource)
         {
             this.eventSource = eventSource;
         }
