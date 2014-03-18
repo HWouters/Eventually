@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Eventually
@@ -13,48 +15,12 @@ namespace Eventually
             return eventSource.Subscribe((_, eventArgs) => eventHandler(eventArgs));
         }
 
-        public static IEvent<TSender, TResult> Select<TSender, TSource, TResult>(this IEvent<TSender, TSource> sourceEvent, Func<TSource, TResult> selector)
+        public static IObservable<TEventArgs> ToObservable<TSender, TEventArgs>(this IEvent<TSender, TEventArgs> eventSource)
         {
-            return new EventWrapper<TSender, TResult>(eventHandler =>
+            return Observable.Create<TEventArgs>(o =>
             {
-                return sourceEvent.Subscribe((sender, eventArgs) => eventHandler(sender, selector(eventArgs)));
+                return eventSource.Subscribe(o.OnNext);
             });
-        }
-
-        public static IEvent<TSender, T> Where<TSender, T>(this IEvent<TSender, T> sourceEvent, Func<T, bool> filter)
-        {
-            return new EventWrapper<TSender, T>(eventHandler =>
-            {
-                return sourceEvent.Subscribe((sender, eventArgs) =>
-                {
-                    if (filter(eventArgs))
-                    {
-                        eventHandler(sender, eventArgs);
-                    }
-                });
-            });
-        }
-
-        public static EventAwaiter<TSender, TEventArgs> GetAwaiter<TSender, TEventArgs>(this IEvent<TSender, TEventArgs> eventSource)
-        {
-            TaskCompletionSource<TEventArgs> tcs = new TaskCompletionSource<TEventArgs>();
-
-            return new EventAwaiter<TSender, TEventArgs>(eventSource);
-        }
-
-        private class EventWrapper<TSender, TResult> : IEvent<TSender, TResult>
-        {
-            private readonly Func<Action<TSender, TResult>, IDisposable> onSubscribe;
-
-            public EventWrapper(Func<Action<TSender, TResult>, IDisposable> onSubscribe)
-            {
-                this.onSubscribe = onSubscribe;
-            }
-
-            public IDisposable Subscribe(Action<TSender, TResult> eventHandler)
-            {
-                return onSubscribe(eventHandler);
-            }
         }
     }
 }
