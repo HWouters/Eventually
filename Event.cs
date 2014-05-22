@@ -24,6 +24,11 @@ namespace Eventually
             }
         }
 
+        public IDisposable Subscribe(Action<TEventArgs> eventHandler)
+        {
+            return Subscribe((_, eventArgs) => eventHandler(eventArgs));
+        }
+
         public IDisposable Subscribe(Action<TSender, TEventArgs> eventHandler)
         {
             eventHandlers.TryAdd(eventHandler, eventHandler);

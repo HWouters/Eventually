@@ -9,13 +9,8 @@ using System.Threading.Tasks;
 namespace Eventually
 {
     public static class EventExtensions
-    {
-        public static IDisposable Subscribe<TSender, TEventArgs>(this IEvent<TSender, TEventArgs> eventSource, Action<TEventArgs> eventHandler)
-        {
-            return eventSource.Subscribe((_, eventArgs) => eventHandler(eventArgs));
-        }
-
-        public static IObservable<TEventArgs> ToObservable<TSender, TEventArgs>(this IEvent<TSender, TEventArgs> eventSource)
+    {     
+        public static IObservable<TEventArgs> ToObservable<TEventArgs>(this IEvent<TEventArgs> eventSource)
         {
             return Observable.Create<TEventArgs>(o =>
             {
