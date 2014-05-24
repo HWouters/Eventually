@@ -12,8 +12,14 @@ namespace Eventually
     {
         private readonly ConcurrentDictionary<Action<T>, Action<T>> eventHandlers = new ConcurrentDictionary<Action<T>, Action<T>>();
 
+        private T cachedArguments;
+        private bool hasCachedArguments;
+
         public void Raise(T arguments)
         {
+            cachedArguments = arguments;
+            hasCachedArguments = true;
+
             foreach (var handler in eventHandlers.Values)
             {
                 handler(arguments);
@@ -23,6 +29,10 @@ namespace Eventually
         public IDisposable Subscribe(Action<T> eventHandler)
         {
             eventHandlers.TryAdd(eventHandler, eventHandler);
+            if (hasCachedArguments)
+            {
+                eventHandler(cachedArguments);
+            }
 
             return Disposable.Create(() =>
             {

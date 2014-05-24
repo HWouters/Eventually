@@ -21,5 +21,20 @@ namespace Eventually.Test
             Assert.AreEqual("hello", received1);
             Assert.AreEqual("hello", received2);
         }
+
+        [TestMethod]
+        public void WhenSubscribed_LastMessageIsSend()
+        {
+            var changed = new Event<string>();
+
+            string received = null;
+
+            changed.Raise("hello");
+
+            changed.Subscribe(s => received = s);
+
+            Assert.AreEqual("hello", received);
+
+        }
     }
 }
