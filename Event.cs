@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,26 +34,11 @@ namespace Eventually
         {
             eventHandlers.TryAdd(eventHandler, eventHandler);
 
-            return new Disposable(() =>
+            return Disposable.Create(() =>
             {
                 Action<TSender, TEventArgs> handler;
                 eventHandlers.TryRemove(eventHandler, out handler);
             });
-        }
-
-        private class Disposable : IDisposable
-        {
-            private readonly Action dispose;
-
-            public Disposable(Action dispose)
-            {
-                this.dispose = dispose;
-            }
-
-            public void Dispose()
-            {
-                dispose();
-            }
         }
     }
 }
