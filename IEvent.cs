@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Eventually
 {
-    public interface IEvent<TEventArgs>
+    public interface IEvent<T>
     {
-        IDisposable Subscribe(Action<TEventArgs> eventHandler);
+        IDisposable Subscribe(Action<T> eventHandler);
     }
 }

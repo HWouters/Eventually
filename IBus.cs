@@ -9,6 +9,7 @@ namespace Eventually
     public interface IBus
     {
         IDisposable Subscribe<T>(Action<T> handler);
+
         void Publish<T>(T message);
     }
 }

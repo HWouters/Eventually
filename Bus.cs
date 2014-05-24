@@ -14,17 +14,17 @@ namespace Eventually
 
         public IDisposable Subscribe<T>(Action<T> handler)
         {
-            var eventSource = GetEventSource<T>();
+            var eventSource = AsEvent<T>();
 
             return eventSource.Subscribe(handler);
         }
 
-        private IEvent<T> GetEventSource<T>()
+        public IEvent<T> AsEvent<T>()
         {
             var key = typeof(T);
             if (eventSources.ContainsKey(key))
             {
-                return eventSources[key] as Event<T>;
+                return (Event<T>)eventSources[key];
             }
             else
             {
@@ -39,7 +39,7 @@ namespace Eventually
         {
             if (eventSources.ContainsKey(typeof(T)))
             {
-                var eventSource = eventSources[typeof(T)] as Event<T>;
+                var eventSource = (Event<T>)eventSources[typeof(T)];
 
                 eventSource.Raise(message);
             }
