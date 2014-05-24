@@ -16,7 +16,7 @@ namespace Eventually.Test
 
             changed.Subscribe(s => received1 = s);
             changed.Subscribe(s => received2 = s);
-            changed.Raise(null, "hello");
+            changed.Raise("hello");
 
             Assert.AreEqual("hello", received1);
             Assert.AreEqual("hello", received2);

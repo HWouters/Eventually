@@ -10,55 +10,38 @@ namespace Eventually
 {
     public class Bus : IBus
     {
-        private readonly ConcurrentDictionary<Type, List<object>> subscribers = new ConcurrentDictionary<Type, List<object>>();
-        private readonly object subscriptionGate = new object();
+        private readonly ConcurrentDictionary<Type, object> eventSources = new ConcurrentDictionary<Type, object>();
 
         public IDisposable Subscribe<T>(Action<T> handler)
         {
-            List<object> handlers = GetHandlers(typeof(T));
+            var eventSource = GetEventSource<T>();
 
-            lock (subscriptionGate)
-            {
-                handlers.Add(handler);
-            }
-
-            return Disposable.Create(() =>
-            {
-                lock (subscriptionGate)
-                {
-                    handlers.Remove(handler);
-                }
-            });
+            return eventSource.Subscribe(handler);
         }
 
-        private List<object> GetHandlers(Type key)
+        private IEvent<T> GetEventSource<T>()
         {
-            if (subscribers.ContainsKey(key))
+            var key = typeof(T);
+            if (eventSources.ContainsKey(key))
             {
-                return subscribers[key];
+                return eventSources[key] as Event<T>;
             }
             else
             {
-                var handlers = new List<object>();
-                subscribers[key] = handlers;
+                var eventSource = new Event<T>();
+                eventSources.TryAdd(key, eventSource);
 
-                return handlers;
+                return eventSource;
             }
         }
 
         public void Publish<T>(T message)
         {
-            if (subscribers.ContainsKey(typeof(T)))
+            if (eventSources.ContainsKey(typeof(T)))
             {
-                var handlers = subscribers[typeof(T)];
+                var eventSource = eventSources[typeof(T)] as Event<T>;
 
-                lock (subscriptionGate)
-                {
-                    foreach (Action<T> handler in handlers)
-                    {
-                        handler(message);
-                    }
-                }
+                eventSource.Raise(message);
             }
         }
     }

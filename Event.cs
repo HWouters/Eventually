@@ -8,35 +8,25 @@ using System.Threading.Tasks;
 
 namespace Eventually
 {
-    public class Event<TEventArgs> : Event<object, TEventArgs>
+    public class Event<T> : IEvent<T>
     {
+        private readonly ConcurrentDictionary<Action<T>, Action<T>> eventHandlers = new ConcurrentDictionary<Action<T>, Action<T>>();
 
-    }
-
-    public class Event<TSender, TEventArgs> : IEvent<TSender, TEventArgs>
-    {
-        private readonly ConcurrentDictionary<Action<TSender, TEventArgs>, Action<TSender, TEventArgs>> eventHandlers = new ConcurrentDictionary<Action<TSender, TEventArgs>, Action<TSender, TEventArgs>>();
-
-        public void Raise(TSender sender, TEventArgs arguments)
+        public void Raise(T arguments)
         {
             foreach (var handler in eventHandlers.Values)
             {
-                handler(sender, arguments);
+                handler(arguments);
             }
         }
 
-        public IDisposable Subscribe(Action<TEventArgs> eventHandler)
-        {
-            return Subscribe((_, eventArgs) => eventHandler(eventArgs));
-        }
-
-        public IDisposable Subscribe(Action<TSender, TEventArgs> eventHandler)
+        public IDisposable Subscribe(Action<T> eventHandler)
         {
             eventHandlers.TryAdd(eventHandler, eventHandler);
 
             return Disposable.Create(() =>
             {
-                Action<TSender, TEventArgs> handler;
+                Action<T> handler;
                 eventHandlers.TryRemove(eventHandler, out handler);
             });
         }
